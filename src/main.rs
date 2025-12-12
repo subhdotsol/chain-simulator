@@ -52,4 +52,45 @@ impl Block {
         let hash_str = format!("{:x}", result);
         hash_str
     }
+
+    fn mine_block_with_visulisation(&mut self) {
+        let mut iterations = 0;
+        loop {
+            self.hash = self.calculate_hash();
+
+            iterations += 1;
+            if !self.hash.is_empty() && &self.hash[..DIFFICULTY] == "00".repeat(DIFFICULTY) {
+                println!("Block mined : {}", self.index);
+                break;
+            }
+
+            if iterations > 100 {
+                println!("Mining in progress...");
+                thread::sleep(Duration::from_millis(3000));
+                println!("calculated_hash: {}", self.hash);
+                break;
+            }
+            self.nonce += 1;
+        }
+    }
+}
+
+impl fmt::Display for Block {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let datetime = chrono::NaiveDateTime::from_timestamp(self.timestamp as i64, 0);
+        write!(f, "Block {} : {} at {}", self.index, self.data, datetime)
+    }
+}
+
+struct Blockchain {
+    chain: Vec<Block>,
+}
+
+impl Blockchain {
+    fn new() -> Blockchain {
+        let genesis_block = Block::new(0, String::new(), String::from("Genesis Block"));
+        Blockchain {
+            chain: vec![genesis_block],
+        }
+    }
 }
