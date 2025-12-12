@@ -1,5 +1,4 @@
 // Import the necessary dependencies
-use core::hash;
 use sha2::{Digest, Sha256};
 use std::fmt;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -77,7 +76,9 @@ impl Block {
 
 impl fmt::Display for Block {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let datetime = chrono::NaiveDateTime::from_timestamp(self.timestamp as i64, 0);
+        let datetime = chrono::DateTime::from_timestamp(self.timestamp as i64, 0)
+            .expect("Invalid timestamp")
+            .naive_utc();
         write!(f, "Block {} : {} at {}", self.index, self.data, datetime)
     }
 }
@@ -93,4 +94,84 @@ impl Blockchain {
             chain: vec![genesis_block],
         }
     }
+    
+    fn add_block(&mut self, mut new_block: Block) {
+        let previous_hash = self.chain.last().unwrap().hash.clone();
+        new_block.previous_hash = previous_hash;
+        new_block.mine_block_with_visulisation();
+        self.chain.push(new_block);
+    }
+
+    fn get_total_blocks(&self) -> usize {
+        self.chain.len()
+    }
+}
+
+fn main() {
+    println!("Welcome to the Blockchain stimulator!");
+
+    println!("Enter your miner name : "); 
+
+    let mut miner_name = String::new();
+
+    std::io::stdin()
+        .read_line(&mut miner_name)
+        .expect("Failed to read line");
+
+    miner_name = miner_name.trim().to_string();
+
+    let trader_names = vec!["Neha" , "Subh" , "Tiya" , "Naina" , "Prakhar" , "Prapti" , "Toly" , "Kate" , "Jane" , "Sourav"]; 
+
+    let mut blockchain = Blockchain::new();
+
+    println!("\n Let's start mining and stimulating transactions!"); 
+
+    let mut sender = miner_name.clone();
+
+    for i in 0..trader_names.len() {
+        println!("Mining Block {} ..." , i + 1 ); 
+        let recipient = if i < trader_names.len() - 1 {
+            trader_names[i + 1].to_string()
+        } else {
+            miner_name.clone()
+        };
+
+        let transaction = format!("Send {} to {}", sender, recipient);
+
+        let new_block = Block::new((i+1) as u32, String::new(), transaction.clone());
+        blockchain.add_block(new_block);
+
+        println!("Transaction added : {}", transaction);
+
+        sender = recipient;
+
+        println!()
+    }
+
+
+    let total_blocks = blockchain.get_total_blocks();
+
+    println!("\nTotal number of blocks : {}", total_blocks);
+
+    println!("\nBlockchain contents:");
+    for block in blockchain.chain.iter() {
+        println!("{}", block);
+    }
+
+    let novacoin_per_block: usize = 10;
+    let novacoin_traded: usize = total_blocks * novacoin_per_block;
+
+    println!("💰 Total NovaCoin traded: {} NovaCoin", novacoin_traded);
+
+    let end_timestamp: u64 = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_secs();
+
+    let end_datetime: Option<chrono::DateTime<chrono::Utc>> = 
+        chrono::DateTime::from_timestamp(end_timestamp as i64, 0);
+
+    println!("⏰ Simulation ended at: {}", end_datetime.unwrap());
+
+    println!("🎉 Congrats! Mining operation completed successfully!");
 }
