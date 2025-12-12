@@ -106,6 +106,12 @@ Block 2 : Send Neha to Subh at 2025-12-12 12:47:56
 🎉 Congrats! Mining operation completed successfully!
 ```
 
+### Program Output Screenshot
+
+Here's what the actual program output looks like:
+
+![Blockchain Simulator Output](output.png)
+
 ## 🔧 Technical Details
 
 ### Block Structure
